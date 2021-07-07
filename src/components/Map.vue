@@ -151,6 +151,12 @@ export default {
         ScreenSpaceEventType.LEFT_DOUBLE_CLICK
       );
 
+      this.viewer.resolutionScale = window.devicePixelRatio;
+
+      // 开启抗锯齿
+      this.viewer.scene.fxaa = true;
+      this.viewer.scene.postProcessStages.fxaa.enabled = true;
+
       this.setViewToHome();
       this.screenSpaceClickPosition();
       this.initPolyLine();
