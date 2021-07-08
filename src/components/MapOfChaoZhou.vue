@@ -36,12 +36,9 @@ import {
   EllipsoidSurfaceAppearance,
   Material,
   GeoJsonDataSource,
-  SceneMode,
-  SceneTransitioner,
 } from 'cesium/Build/Cesium/Cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
 import { PolylineTrailLinkMaterialProperty } from '@/utils/test.js';
-import { gcj02towgs84 } from '@/utils/coordinateTransformation.js';
 
 import { getRequest } from '@/api';
 
@@ -88,8 +85,6 @@ export default {
     window.Cartesian3 = Cartesian3;
     window.Matrix4 = Matrix4;
     window.Material = Material;
-    window.SceneMode = SceneMode;
-    window.SceneTransitioner = SceneTransitioner;
   },
   beforeDestroy() {
     console.log('组件即将销毁');
@@ -146,18 +141,12 @@ export default {
       // 关闭logo信息
       this.viewer.cesiumWidget.creditContainer.style.display = 'none';
       this.viewer.scene.screenSpaceCameraController.minimumZoomDistance = 50;
-      this.viewer.scene.screenSpaceCameraController.maximumZoomDistance = 10000;
+      // this.viewer.scene.screenSpaceCameraController.maximumZoomDistance = 10000;
 
       // 取消默认的双击事件
       this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(
         ScreenSpaceEventType.LEFT_DOUBLE_CLICK
       );
-
-      this.viewer.resolutionScale = window.devicePixelRatio;
-
-      // 开启抗锯齿
-      this.viewer.scene.fxaa = true;
-      this.viewer.scene.postProcessStages.fxaa.enabled = true;
 
       this.setViewToHome();
       this.screenSpaceClickPosition();
@@ -165,7 +154,7 @@ export default {
       // this.initWater();
       this.initLuwang();
       // this.initRiver();
-      this.addPrimitivesForGeoJson();
+      // this.addPrimitivesForGeoJson();
 
       // long = 114.47999, lat = 22.97798
       // this.initGlb();
@@ -175,7 +164,7 @@ export default {
       // this.initGlb(0, 0, 0, 114.4808, 22.98035);
 
       // 加载3Dtiles
-      this.loading3DTiles();
+      // this.loading3DTiles();
 
       this.initCameraRotate();
     },
@@ -213,7 +202,7 @@ export default {
     setViewToHome() {
       this.viewer.camera.setView({
         // fromDegrees()方法，将经纬度和高程转换为世界坐标
-        destination: Cartesian3.fromDegrees(114.47932, 22.98434, 500.0),
+        destination: Cartesian3.fromDegrees(116.647, 23.50249, 500.0),
         orientation: {
           // 指向
           heading: 2.93,
@@ -224,13 +213,9 @@ export default {
       });
       this.flyToHome();
     },
-    flyToHome(is3D) {
+    flyToHome() {
       this.viewer.camera.flyTo({
-        destination: new Cartesian3.fromDegrees(
-          114.30821,
-          23.02448,
-          is3D ? 500.0 : 40000
-        ),
+        destination: new Cartesian3.fromDegrees(116.647, 23.50249, 500.0),
         orientation: {
           heading: 2.93,
           pitch: -0.55,
@@ -479,31 +464,36 @@ export default {
     },
 
     initLuwang() {
-      let materialMap = {};
-      for (const key in roadMaterialMap) {
-        console.log(key);
-        materialMap[key] = new PolylineTrailLinkMaterialProperty({
-          image: roadMaterialMap[key],
-          color: Color.WHILE,
-          transparent: true,
-          duration: 3000,
-        });
-      }
-      window.materialMap = materialMap;
-      console.log(materialMap);
-      const luwangData = GeoJsonDataSource.load('luwang.json', {
-        stroke: Color.HOTPINK,
-        fill: Color.PINK.withAlpha(0.5),
-        strokeWidth: 3,
+      // let materialMap = {};
+      // for (const key in roadMaterialMap) {
+      //   console.log(key);
+      //   materialMap[key] = new PolylineTrailLinkMaterialProperty({
+      //     image: roadMaterialMap[key],
+      //     color: Color.WHILE,
+      //     transparent: true,
+      //     duration: 1500,
+      //   });
+      // }
+      const material = new PolylineTrailLinkMaterialProperty({
+        color: Color.WHILE,
+        transparent: true,
+        duration: 3000,
       });
+      const luwangData = GeoJsonDataSource.load(
+        'http://127.0.0.1:5500/chaoan.geojson',
+        {
+          stroke: Color.HOTPINK,
+          fill: Color.PINK.withAlpha(0.5),
+          strokeWidth: 3,
+        }
+      );
       this.viewer.dataSources.add(luwangData);
       luwangData.then((dataSources) => {
         const entities = dataSources.entities.values;
         console.log(entities);
         window.entities = entities;
         entities.forEach((entitie) => {
-          entitie.polyline._material =
-            materialMap[entitie.properties.YSDM._value];
+          entitie.polyline._material = material;
         });
         console.log(dataSources);
       });
@@ -527,11 +517,14 @@ export default {
           },
         }),
       });
-      const riversData = GeoJsonDataSource.load('rivers.geojson', {
-        stroke: Color.HOTPINK,
-        fill: Color.PINK.withAlpha(0.5),
-        strokeWidth: 0,
-      });
+      const riversData = GeoJsonDataSource.load(
+        'http://192.168.205.101:5501/rivers.geojson',
+        {
+          stroke: Color.HOTPINK,
+          fill: Color.PINK.withAlpha(0.5),
+          strokeWidth: 0,
+        }
+      );
       this.viewer.dataSources.add(riversData);
       riversData.then((dataSources) => {
         const entities = dataSources.entities.values;
@@ -552,14 +545,11 @@ export default {
             type: 'Water',
             uniforms: {
               normalMap: waterImage,
-              baseWaterColor: Color.fromCssColorString('#5389ec'),
-              blendColor: Color.fromCssColorString('#b0d3f3'),
               // 频率
               frequency: 400.0,
               animationSpeed: 0.01,
               // 振幅
-              amplitude: 100.0,
-              specularIntensity: 50,
+              amplitude: 10.0,
             },
           },
         }),
@@ -601,12 +591,12 @@ export default {
       let now = Date.now();
 
       const positionList = [
-        [114.32253, 23.02582],
-        [114.362, 23.04191],
-        [114.28526, 23.01656],
+        [116.67349, 23.55605],
+        [116.64778, 23.50263],
+        [116.67939, 23.53852],
         {
-          start: [114.24728, 23.0162],
-          end: [114.19811, 23.01527, 800],
+          start: [116.63957, 23.51186],
+          end: [116.67922, 23.46771],
         },
       ];
       const locationEntities = positionList.map((position, index) => {
@@ -639,7 +629,7 @@ export default {
             new HeadingPitchRange(
               CesiumMath.toRadians(heading),
               CesiumMath.toRadians(-20),
-              5000
+              8000
             )
           );
           if (heading > 360) {
@@ -653,18 +643,26 @@ export default {
             locationEntitie = locationEntities[entitieIndex];
             const _positionObj = positionList[entitieIndex];
             if (!Array.isArray(_positionObj)) {
-              this.startRoam(undefined, undefined, () => {
-                this.startRoam(_positionObj.end[0], _positionObj.end[1], () => {
-                  this.framer = requestAnimationFrame(rotateFn);
-                });
-              });
+              this.startRoam(
+                _positionObj.start[0],
+                _positionObj.start[1],
+                () => {
+                  this.startRoam(
+                    _positionObj.end[0],
+                    _positionObj.end[1],
+                    () => {
+                      this.framer = requestAnimationFrame(rotateFn);
+                    }
+                  );
+                }
+              );
             } else {
               this.viewer
                 .flyTo(locationEntitie, {
                   offset: new HeadingPitchRange(
                     CesiumMath.toRadians(heading),
                     CesiumMath.toRadians(-20),
-                    5000
+                    8000
                   ),
                 })
                 .then(() => {
@@ -690,65 +688,21 @@ export default {
         });
     },
 
-    startRoam(long = 114.24728, lat = 23.0162, cb) {
-      const position = Cartesian3.fromDegrees(long, lat, 800);
+    startRoam(long = 116.63957, lat = 23.51186, cb) {
+      const position = Cartesian3.fromDegrees(long, lat, 400);
       this.viewer.camera.flyTo({
         destination: position,
-        duration: 6,
-        maximumHeight: 800,
+        duration: 12,
+        maximumHeight: 400,
         orientation: {
-          heading: CesiumMath.toRadians(-90),
-          pitch: CesiumMath.toRadians(-20),
-          roll: CesiumMath.toRadians(0),
+          heading: 2.428030529385486,
+          pitch: -0.21129330172726757,
+          roll: 0.0016408773474809735,
         },
         complete: () => {
+          console.log(long, lat);
           cb && cb();
         },
-      });
-    },
-
-    changeViewMode(is3D) {
-      const duration = 1;
-      is3D
-        ? this.viewer.scene.morphTo3D(duration)
-        : this.viewer.scene.morphTo2D(duration);
-      setTimeout(() => {
-        this.flyToHome(is3D);
-        this.viewer.scene.screenSpaceCameraController.maximumZoomDistance = is3D
-          ? 10000
-          : 40000;
-      }, 2000);
-    },
-
-    driving(start, end) {
-      getRequest('https://restapi.amap.com/v5/direction/driving', {
-        key: '74855f70a5386d3d281bae746001e4f0',
-        origin: start,
-        destination: end,
-        show_fields: 'polyline',
-      }).then(({ data }) => {
-        const {
-          route: { paths },
-        } = data;
-        console.log(paths);
-        paths.forEach((path) => {
-          path.steps.forEach((step) => {
-            let positionArr = step.polyline.split(/;/);
-            positionArr = positionArr.map((position) => {
-              position = position.split(',');
-              return gcj02towgs84(
-                parseFloat(position[0]),
-                parseFloat(position[1])
-              );
-            });
-            this.viewer.entities.add({
-              polyline: {
-                positions: Cartesian3.fromDegreesArray(positionArr.flat()),
-                width: 2,
-              },
-            });
-          });
-        });
       });
     },
   },
