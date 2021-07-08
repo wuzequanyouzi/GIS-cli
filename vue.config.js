@@ -62,7 +62,7 @@ module.exports = {
   },
   chainWebpack: (config) => {
     config.plugin("html").tap((args) => {
-      args[0].title = "Demo-cli";
+      args[0].title = "3D地图展示";
       return args;
     });
   },

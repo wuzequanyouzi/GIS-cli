@@ -2,7 +2,7 @@
  * @Author: zequan.wu
  * @Date: 2021-07-07 09:21:53
  * @LastEditors: zequan.wu
- * @LastEditTime: 2021-07-07 16:23:07
+ * @LastEditTime: 2021-07-08 11:58:31
  * @Description: file content
  */
 
@@ -19,25 +19,25 @@ import thingColor from "@/assets/image/thingColor.png";
 
 const roadMaterialMap = {
   // 4202020: urbanExpressway,
-  4202020: thingColor,
+  4202020: expressway,
   // 4303050: urbanTrunkRoad,
-  4303050: thingColor,
-  4201011: nationalHighway,
-  4202011: provincialHighway,
-  4211011: countyHighway,
-  4211021: countyHighway,
+  4303050: expressway,
+  4201011: expressway,
+  4202011: expressway,
+  4211011: expressway,
+  4211021: expressway,
   4402020: ruralRoad,
   4305011: ruralRoad,
   4305021: ruralRoad,
   4305031: ruralRoad,
   4305040: ruralRoad,
-  4101022: railway,
-  4101023: railway,
+  4101022: expressway,
+  4101023: expressway,
   4209011: expressway,
   4209012: expressway,
-  4205011: urbanTrunkRoad,
-  4206010: otherWay,
-  4307020: otherWay,
+  4205011: ruralRoad,
+  4206010: expressway,
+  4307020: expressway,
 };
 
 export { roadMaterialMap };

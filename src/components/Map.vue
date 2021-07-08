@@ -39,6 +39,8 @@ import {
   EllipsoidSurfaceAppearance,
   Material,
   GeoJsonDataSource,
+  SceneMode,
+  SceneTransitioner,
 } from "cesium/Build/Cesium/Cesium";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import { PolylineTrailLinkMaterialProperty } from "@/utils/test.js";
@@ -88,6 +90,8 @@ export default {
     window.Cartesian3 = Cartesian3;
     window.Matrix4 = Matrix4;
     window.Material = Material;
+    window.SceneMode = SceneMode;
+    window.SceneTransitioner = SceneTransitioner;
   },
   beforeDestroy() {
     console.log("组件即将销毁");
@@ -159,18 +163,18 @@ export default {
 
       this.setViewToHome();
       this.screenSpaceClickPosition();
-      this.initPolyLine();
+      // this.initPolyLine();
       // this.initWater();
       this.initLuwang();
       // this.initRiver();
       this.addPrimitivesForGeoJson();
 
       // long = 114.47999, lat = 22.97798
-      this.initGlb();
-      this.initGlb(0, 0, 0, 114.47979, 22.9775);
-      this.initGlb(0, 0, 0, 114.480005, 22.98005);
-      this.initGlb(0, 0, 0, 114.4803, 22.98035);
-      this.initGlb(0, 0, 0, 114.4808, 22.98035);
+      // this.initGlb();
+      // this.initGlb(0, 0, 0, 114.47979, 22.9775);
+      // this.initGlb(0, 0, 0, 114.480005, 22.98005);
+      // this.initGlb(0, 0, 0, 114.4803, 22.98035);
+      // this.initGlb(0, 0, 0, 114.4808, 22.98035);
 
       // 加载3Dtiles
       this.loading3DTiles();
@@ -222,9 +226,13 @@ export default {
       });
       this.flyToHome();
     },
-    flyToHome() {
+    flyToHome(is3D) {
       this.viewer.camera.flyTo({
-        destination: new Cartesian3.fromDegrees(114.47932, 22.98434, 500.0),
+        destination: new Cartesian3.fromDegrees(
+          114.30821,
+          23.02448,
+          is3D ? 500.0 : 40000
+        ),
         orientation: {
           heading: 2.93,
           pitch: -0.55,
@@ -480,19 +488,16 @@ export default {
           image: roadMaterialMap[key],
           color: Color.WHILE,
           transparent: true,
-          duration: 1500,
+          duration: 3000,
         });
       }
       window.materialMap = materialMap;
       console.log(materialMap);
-      const luwangData = GeoJsonDataSource.load(
-        "http://192.168.205.101:5501/luwang.json",
-        {
-          stroke: Color.HOTPINK,
-          fill: Color.PINK.withAlpha(0.5),
-          strokeWidth: 3,
-        }
-      );
+      const luwangData = GeoJsonDataSource.load("luwang.json", {
+        stroke: Color.HOTPINK,
+        fill: Color.PINK.withAlpha(0.5),
+        strokeWidth: 3,
+      });
       this.viewer.dataSources.add(luwangData);
       luwangData.then((dataSources) => {
         const entities = dataSources.entities.values;
@@ -524,14 +529,11 @@ export default {
           },
         }),
       });
-      const riversData = GeoJsonDataSource.load(
-        "http://192.168.205.101:5501/rivers.geojson",
-        {
-          stroke: Color.HOTPINK,
-          fill: Color.PINK.withAlpha(0.5),
-          strokeWidth: 0,
-        }
-      );
+      const riversData = GeoJsonDataSource.load("rivers.geojson", {
+        stroke: Color.HOTPINK,
+        fill: Color.PINK.withAlpha(0.5),
+        strokeWidth: 0,
+      });
       this.viewer.dataSources.add(riversData);
       riversData.then((dataSources) => {
         const entities = dataSources.entities.values;
@@ -552,11 +554,14 @@ export default {
             type: "Water",
             uniforms: {
               normalMap: waterImage,
+              baseWaterColor: Color.fromCssColorString("#5389ec"),
+              blendColor: Color.fromCssColorString("#b0d3f3"),
               // 频率
               frequency: 400.0,
               animationSpeed: 0.01,
               // 振幅
-              amplitude: 10.0,
+              amplitude: 100.0,
+              specularIntensity: 50,
             },
           },
         }),
@@ -703,6 +708,15 @@ export default {
         },
       });
     },
+
+    changeViewMode(is3D) {
+      const duration = 1;
+      is3D ? this.viewer.scene.morphTo3D(duration) : this.viewer.scene.morphTo2D(duration);
+      setTimeout(() => {
+        this.flyToHome(is3D);
+        this.viewer.scene.screenSpaceCameraController.maximumZoomDistance = is3D ? 10000 : 40000;
+      }, 2000);
+    }
   },
 };
 </script>
