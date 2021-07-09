@@ -2,7 +2,7 @@
  * @Author: zequan.wu
  * @Date: 2021-06-25 10:11:41
  * @LastEditors: zequan.wu
- * @LastEditTime: 2021-07-08 17:13:03
+ * @LastEditTime: 2021-07-08 17:28:38
  * @Description: file content
 -->
 <template>
@@ -20,7 +20,9 @@
 
     <p class="label">{{ label }}</p>
 
-    <div class="change-mode-btn" @click="changeMode">视图变换: {{ mode }}</div>
+    <div class="change-mode-btn" @click="changeMode">
+      当前视图模式: {{ mode }}，点击切换
+    </div>
   </div>
 </template>
 
@@ -120,7 +122,7 @@ export default {
   position: absolute;
   right: 10px;
   top: 10px;
-  width: 100px;
+  width: 150px;
   height: 40px;
   display: flex;
   justify-content: center;

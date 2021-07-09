@@ -2,7 +2,7 @@
  * @Author: zequan.wu
  * @Date: 2021-07-07 14:07:22
  * @LastEditors: zequan.wu
- * @LastEditTime: 2021-07-07 17:08:48
+ * @LastEditTime: 2021-07-09 15:01:37
  * @Description: file content
  */
 import * as Cesium from "cesium/Build/Cesium/Cesium";
@@ -37,6 +37,29 @@ function PolylineTrailLinkMaterialProperty(options = {}) {
   // czm_material： 一个Cesium封装的GLSL类型
   // 编写一个着色器函数，czm_materialInput => czm_material
   //
+
+  // `
+  // uniform vec4 color;\n\
+  // uniform float glowPower;\n\
+  // uniform float taperPower;\n\
+  // czm_material czm_getMaterial(czm_materialInput materialInput)\n\
+  // {\n\
+  // czm_material material = czm_getDefaultMaterial(materialInput);\n\
+  // vec2 st = materialInput.st;\n\
+  // float glow = glowPower / abs(st.t - 0.5) - (glowPower / 0.5);\n\
+  // if (taperPower <= 0.99999) {\n\
+  // glow *= min(1.0, taperPower / (0.5 - st.s * 0.5) - (taperPower / 0.5));\n\
+  // }\n\
+  // vec4 fragColor;\n\
+  // fragColor.rgb = max(vec3(glow - 1.0 + color.rgb), color.rgb);\n\
+  // fragColor.a = clamp(0.0, 1.0, glow) * color.a;\n\
+  // fragColor = czm_gammaCorrect(fragColor);\n\
+  // material.emission = fragColor.rgb;\n\
+  // material.alpha = fragColor.a;\n\
+  // return material;\n\
+  // }\n\
+  // `
+
   Cesium.Material.PolylineTrailLinkMaterialSource =
     // 定义着色器源码 核心部分
     "uniform vec4 color;\n\
@@ -51,9 +74,13 @@ function PolylineTrailLinkMaterialProperty(options = {}) {
         if (taperPower <= 0.99999) {\n\
           glow *= min(1.0, taperPower / (0.5 - st.s * 0.5) - (taperPower / 0.5));\n\
         }\n\
-        colorImage.a = clamp(0.0, 1.0, glow) * color.a;\n\
+        vec4 fragColor;\n\
+        fragColor.rgb = max(vec3(glow - 1.0 + color.rgb), colorImage.rgb);\n\
+        fragColor.a = clamp(0.0, 1.0, glow) * color.a;\n\
+        fragColor = czm_gammaCorrect(fragColor);\n\
         material.alpha = colorImage.a;\n\
         material.diffuse = colorImage.rgb;\n\
+        material.emission = fragColor.rgb;\n\
         return material;\n\
     }";
   Cesium.Material._materialCache.addMaterial(
@@ -62,9 +89,9 @@ function PolylineTrailLinkMaterialProperty(options = {}) {
       fabric: {
         type: Cesium.Material.PolylineTrailLinkMaterialType,
         uniforms: {
-          color: new Cesium.Color(1.0, 0.0, 0.0, 1),
+          color: Cesium.Color.YELLOW,
           image: options.image,
-          glowPower: 0.3,
+          glowPower: 1.0,
           taperPower: 1.0,
           time: 0,
         },
@@ -93,6 +120,8 @@ Object.defineProperties(PolylineTrailLinkMaterialProperty.prototype, {
   transparent: Cesium.createPropertyDescriptor("transparent"),
   glowPower: Cesium.createPropertyDescriptor("glowPower"),
   taperPower: Cesium.createPropertyDescriptor("taperPower"),
+  width: Cesium.createPropertyDescriptor("width"),
+  height: Cesium.createPropertyDescriptor("height"),
 });
 PolylineTrailLinkMaterialProperty.prototype.getType = function () {
   return "PolylineTrailLink";

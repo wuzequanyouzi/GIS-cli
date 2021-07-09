@@ -1,5 +1,8 @@
 <template>
-  <div id="cesiumContainer" :class="{ 'is-not-event': notMouseOperation }"></div>
+  <div
+    id="cesiumContainer"
+    :class="{ 'is-not-event': notMouseOperation }"
+  ></div>
 </template>
 
 <script>
@@ -38,22 +41,22 @@ import {
   GeoJsonDataSource,
   SceneMode,
   SceneTransitioner,
-} from 'cesium/Build/Cesium/Cesium';
-import 'cesium/Build/Cesium/Widgets/widgets.css';
-import { PolylineTrailLinkMaterialProperty } from '@/utils/test.js';
-import { gcj02towgs84 } from '@/utils/coordinateTransformation.js';
+} from "cesium/Build/Cesium/Cesium";
+import "cesium/Build/Cesium/Widgets/widgets.css";
+import { PolylineTrailLinkMaterialProperty } from "@/utils/test.js";
+import { gcj02towgs84 } from "@/utils/coordinateTransformation.js";
 
-import { getRequest } from '@/api';
+import { getRequest } from "@/api";
 
-import { roadMaterialMap } from '@/config/constant.js';
+import { roadMaterialMap } from "@/config/constant.js";
 
-import p1 from '@/assets/image/colors1.png';
-import p2 from '@/assets/image/colors3.png';
-import j1 from '@/assets/image/colors2.jpg';
-import expressway from '@/assets/image/expressway.png';
-import waterImage from '@/assets/image/water.jpg';
+import p1 from "@/assets/image/colors1.png";
+import p2 from "@/assets/image/colors3.png";
+import j1 from "@/assets/image/colors2.jpg";
+import expressway from "@/assets/image/expressway.png";
+import waterImage from "@/assets/image/water.jpg";
 export default {
-  name: 'Map',
+  name: "Map",
   props: {
     notMouseOperation: {
       type: Boolean,
@@ -76,7 +79,7 @@ export default {
     this.entities = [];
 
     this.entityCollection = new EntityCollection({
-      id: 'entityCollection_all',
+      id: "entityCollection_all",
     });
   },
   async mounted() {
@@ -92,7 +95,7 @@ export default {
     window.SceneTransitioner = SceneTransitioner;
   },
   beforeDestroy() {
-    console.log('组件即将销毁');
+    console.log("组件即将销毁");
     this.destroyViewer();
   },
   methods: {
@@ -111,15 +114,15 @@ export default {
       // });
 
       const mapBoxLayer = new MapboxStyleImageryProvider({
-        url: 'https://api.mapbox.com/styles/v1',
-        username: '15217980296',
-        styleId: 'ckqiuk2jo036517pfwamuad7r',
+        url: "https://api.mapbox.com/styles/v1",
+        username: "15217980296",
+        styleId: "ckqiuk2jo036517pfwamuad7r",
         accessToken:
-          'pk.eyJ1IjoiMTUyMTc5ODAyOTYiLCJhIjoiY2txaXRuMjR4MndyeTMxbGNiNmNmcXdzbSJ9.3uYvGa57S-P8DEDxJxA08Q',
+          "pk.eyJ1IjoiMTUyMTc5ODAyOTYiLCJhIjoiY2txaXRuMjR4MndyeTMxbGNiNmNmcXdzbSJ9.3uYvGa57S-P8DEDxJxA08Q",
         scaleFactor: true,
       });
 
-      this.viewer = new Viewer('cesiumContainer', {
+      this.viewer = new Viewer("cesiumContainer", {
         animation: false, // 隐藏动画控件
         baseLayerPicker: false, // 隐藏图层选择控件
         fullscreenButton: false, // 隐藏全屏按钮
@@ -139,12 +142,12 @@ export default {
         // }),
       });
 
-      this.viewer.scene.debugShowFramesPerSecond = true;
+      this.viewer.scene.debugShowFramesPerSecond = false;
 
       this.viewer.scene.globe.depthTestAgainstTerrain = false;
       this.viewer.scene.postProcessStages.fxaa.enabled = false;
       // 关闭logo信息
-      this.viewer.cesiumWidget.creditContainer.style.display = 'none';
+      this.viewer.cesiumWidget.creditContainer.style.display = "none";
       this.viewer.scene.screenSpaceCameraController.minimumZoomDistance = 50;
       this.viewer.scene.screenSpaceCameraController.maximumZoomDistance = 10000;
 
@@ -184,7 +187,7 @@ export default {
       // http://10.75.251.162/tileSet/3DtileBaiMo/tileset.json
       const baiMoTiles = this.viewer.scene.primitives.add(
         new Cesium3DTileset({
-          url: 'http://10.75.251.162/tileSet/3DtileBaiMo/tileset.json',
+          url: "http://10.75.251.162/tileSet/3DtileBaiMo/tileset.json",
         })
       );
       baiMoTiles.readyPromise.then((_baiMoTiles) => {
@@ -245,8 +248,8 @@ export default {
       const entitie = this.viewer.entities.getById(locationInfo.bsm);
       if (!entitie) {
         this.$message({
-          type: 'error',
-          message: '当前建筑没有定位信息',
+          type: "error",
+          message: "当前建筑没有定位信息",
         });
       }
       if (!entitie.show) {
@@ -280,7 +283,7 @@ export default {
         );
         const latitude = CesiumMath.toDegrees(cartographic.latitude).toFixed(5);
         console.log(longitude, latitude);
-        this.$emit('getBuildingPosition', {
+        this.$emit("getBuildingPosition", {
           longitude,
           latitude,
           height: cartographic.height,
@@ -302,7 +305,7 @@ export default {
           const latitude = CesiumMath.toDegrees(cartographic.latitude).toFixed(
             5
           );
-          this.$emit('getScreenSpaceViewAngleInfo', {
+          this.$emit("getScreenSpaceViewAngleInfo", {
             cameraLongitude: longitude,
             cameraLatitude: latitude,
             cameraHeight: cartographic.height,
@@ -389,7 +392,7 @@ export default {
         position,
         orientation,
         model: {
-          uri: 'http://localhost:5500/study/test.glb',
+          uri: "http://localhost:5500/study/test.glb",
           color: Color.WHILE,
           minimumPixelSize: 40,
           colorBlendAmount: 0,
@@ -432,7 +435,7 @@ export default {
         114.47958, 22.97901, 114.48247, 22.97892,
       ]);
       const redLine1 = this.viewer.entities.add({
-        name: 'Red line on terrain',
+        name: "Red line on terrain",
         polyline: {
           positions: Cartesian3.fromDegreesArray([
             114.47946, 22.97713, 114.47958, 22.97901, 114.47969, 22.98072,
@@ -442,7 +445,7 @@ export default {
         },
       });
       const redLine2 = this.viewer.entities.add({
-        name: 'Red line on terrain',
+        name: "Red line on terrain",
         polyline: {
           positions: positions1,
           width: 2,
@@ -484,17 +487,16 @@ export default {
         console.log(key);
         materialMap[key] = new PolylineTrailLinkMaterialProperty({
           image: roadMaterialMap[key],
-          color: Color.WHILE,
+          color: Color.BLUE,
           transparent: true,
           duration: 3000,
         });
       }
       window.materialMap = materialMap;
-      console.log(materialMap);
-      const luwangData = GeoJsonDataSource.load('luwang.json', {
-        stroke: Color.HOTPINK,
-        fill: Color.PINK.withAlpha(0.5),
-        strokeWidth: 3,
+      const luwangData = GeoJsonDataSource.load("luwang.json", {
+        stroke: Color.BLUE,
+        fill: Color.BLUE.withAlpha(0.1),
+        strokeWidth: 10,
       });
       this.viewer.dataSources.add(luwangData);
       luwangData.then((dataSources) => {
@@ -515,7 +517,7 @@ export default {
         aboveGround: true,
         material: new Material({
           fabric: {
-            type: 'Water',
+            type: "Water",
             uniforms: {
               normalMap: waterImage,
               // 频率
@@ -527,7 +529,7 @@ export default {
           },
         }),
       });
-      const riversData = GeoJsonDataSource.load('rivers.geojson', {
+      const riversData = GeoJsonDataSource.load("rivers.geojson", {
         stroke: Color.HOTPINK,
         fill: Color.PINK.withAlpha(0.5),
         strokeWidth: 0,
@@ -549,11 +551,11 @@ export default {
         aboveGround: true,
         material: new Material({
           fabric: {
-            type: 'Water',
+            type: "Water",
             uniforms: {
               normalMap: waterImage,
-              baseWaterColor: Color.fromCssColorString('#5389ec'),
-              blendColor: Color.fromCssColorString('#b0d3f3'),
+              baseWaterColor: Color.fromCssColorString("#5389ec"),
+              blendColor: Color.fromCssColorString("#b0d3f3"),
               // 频率
               frequency: 400.0,
               animationSpeed: 0.01,
@@ -564,10 +566,10 @@ export default {
           },
         }),
       });
-      getRequest('http://192.168.205.101:5501/rivers.geojson').then((res) => {
+      getRequest("rivers.geojson").then((res) => {
         console.log(res.data.features);
         res.data.features.forEach((feature) => {
-          if (feature.geometry.type === 'MultiPolygon') {
+          if (feature.geometry.type === "MultiPolygon") {
             const polygon = this.multiPolygonToPolygons(
               feature.geometry.coordinates
             );
@@ -721,11 +723,11 @@ export default {
     },
 
     driving(start, end) {
-      getRequest('https://restapi.amap.com/v5/direction/driving', {
-        key: '74855f70a5386d3d281bae746001e4f0',
+      getRequest("https://restapi.amap.com/v5/direction/driving", {
+        key: "74855f70a5386d3d281bae746001e4f0",
         origin: start,
         destination: end,
-        show_fields: 'polyline',
+        show_fields: "polyline",
       }).then(({ data }) => {
         const {
           route: { paths },
@@ -735,7 +737,7 @@ export default {
           path.steps.forEach((step) => {
             let positionArr = step.polyline.split(/;/);
             positionArr = positionArr.map((position) => {
-              position = position.split(',');
+              position = position.split(",");
               return gcj02towgs84(
                 parseFloat(position[0]),
                 parseFloat(position[1])
