@@ -2,13 +2,13 @@
  * @Author: zequan.wu
  * @Date: 2021-06-25 10:11:41
  * @LastEditors: zequan.wu
- * @LastEditTime: 2021-07-08 17:28:38
+ * @LastEditTime: 2021-08-18 17:22:21
  * @Description: file content
 -->
 <template>
   <div class="home">
     <Map ref="map" :notMouseOperation="notMouseOperation" />
-    <div class="option">
+    <!-- <div class="option">
       <div
         class="switch"
         :class="[notMouseOperation ? 'open' : 'close']"
@@ -16,12 +16,12 @@
       >
         {{ "演示: " + switchLabel }}
       </div>
-    </div>
+    </div> -->
 
-    <p class="label">{{ label }}</p>
+    <!-- <p class="label">{{ label }}</p> -->
 
     <div class="change-mode-btn" @click="changeMode">
-      当前视图模式: {{ mode }}，点击切换
+      {{ mode }}
     </div>
   </div>
 </template>
@@ -35,7 +35,7 @@ export default {
   },
   data() {
     return {
-      notMouseOperation: true,
+      notMouseOperation: false,
       is3D: true,
     };
   },
@@ -50,6 +50,31 @@ export default {
     mode() {
       return this.is3D ? "3D" : "2D";
     },
+  },
+  mounted() {
+    const messageHandler = (e) => {
+      const {
+        data: { action, value },
+      } = e;
+      switch (action) {
+        case "changeViewMode":
+          if (value === "3D") {
+            this.is3D = true;
+          } else {
+            this.is3D = false;
+          }
+          this.$refs.map.changeViewMode(this.is3D);
+          break;
+        default:
+          break;
+      }
+    };
+    window.addEventListener("message", messageHandler);
+    this.$emit("hook:beforeDestroy", () => {
+      window.removeEventListener("message", messageHandler);
+    });
+    window.parent &&
+      window.parent.postMessage({ action: "loading", value: false }, "*");
   },
   methods: {
     switchOfDemonstration() {

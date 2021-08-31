@@ -46,14 +46,10 @@ import "cesium/Build/Cesium/Widgets/widgets.css";
 import { PolylineTrailLinkMaterialProperty } from "@/utils/test.js";
 import { gcj02towgs84 } from "@/utils/coordinateTransformation.js";
 
-import { getRequest } from "@/api";
+import { getRequestNotInterceptors } from "@/api";
 
 import { roadMaterialMap } from "@/config/constant.js";
-
-import p1 from "@/assets/image/colors1.png";
-import p2 from "@/assets/image/colors3.png";
 import j1 from "@/assets/image/colors2.jpg";
-import expressway from "@/assets/image/expressway.png";
 import waterImage from "@/assets/image/water.jpg";
 export default {
   name: "Map",
@@ -100,19 +96,6 @@ export default {
   },
   methods: {
     initMap() {
-      // const TDMapLayer = new WebMapTileServiceImageryProvider({
-      //   url:
-      //     'http://{s}.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={TileMatrix}&TILEROW={TileRow}&TILECOL={TileCol}&format=tiles&tk=ce8c90d7c720b0405c0121c6cd8edd99',
-      //   layer: 'img',
-      //   style: 'default',
-      //   format: 'tiles',
-      //   tileMatrixSetID: 'w',
-      //   credit: new Credit('天地图全球影像服务'),
-      //   subdomains: ['t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7'],
-      //   maximumLevel: 18,
-      //   show: false
-      // });
-
       const mapBoxLayer = new MapboxStyleImageryProvider({
         url: "https://api.mapbox.com/styles/v1",
         username: "15217980296",
@@ -135,20 +118,28 @@ export default {
         timeline: false,
         requestRenderMode: false,
         selectionIndicator: false, // 关闭焦框
+
+        /* 地图图层
+         imageryProvider: new TileMapServiceImageryProvider({
+           url: `http://127.0.0.1:5501/`,
+           credit: "googleTitle",
+         }),
+        */
         imageryProvider: mapBoxLayer,
-        // imageryProvider: new TileMapServiceImageryProvider({
-        //   url: `http://127.0.0.1:5501/`,
-        //   credit: "googleTitle",
-        // }),
       });
 
+      // 显示帧数
       this.viewer.scene.debugShowFramesPerSecond = false;
 
+      // 取消深度测试
       this.viewer.scene.globe.depthTestAgainstTerrain = false;
+      // 抗锯齿在其他操作完成后启用
       this.viewer.scene.postProcessStages.fxaa.enabled = false;
       // 关闭logo信息
       this.viewer.cesiumWidget.creditContainer.style.display = "none";
+      // 摄像机距球面最小距离
       this.viewer.scene.screenSpaceCameraController.minimumZoomDistance = 50;
+      // 摄像机距球面最远距离
       this.viewer.scene.screenSpaceCameraController.maximumZoomDistance = 10000;
 
       // 取消默认的双击事件
@@ -164,18 +155,8 @@ export default {
 
       this.setViewToHome();
       this.screenSpaceClickPosition();
-      // this.initPolyLine();
-      // this.initWater();
       this.initLuwang();
-      // this.initRiver();
       this.addPrimitivesForGeoJson();
-
-      // long = 114.47999, lat = 22.97798
-      // this.initGlb();
-      // this.initGlb(0, 0, 0, 114.47979, 22.9775);
-      // this.initGlb(0, 0, 0, 114.480005, 22.98005);
-      // this.initGlb(0, 0, 0, 114.4803, 22.98035);
-      // this.initGlb(0, 0, 0, 114.4808, 22.98035);
 
       // 加载3Dtiles
       this.loading3DTiles();
@@ -191,37 +172,40 @@ export default {
         })
       );
       baiMoTiles.readyPromise.then((_baiMoTiles) => {
-        // let cartographic = Cartographic.fromCartesian(
-        //   _baiMoTiles.boundingSphere.center
-        // );
-        // let surface = Cartesian3.fromRadians(
-        //   cartographic.longitude,
-        //   cartographic.latitude,
-        //   cartographic.height
-        // );
-        // let offset = Cartesian3.fromRadians(
-        //   cartographic.longitude,
-        //   cartographic.latitude,
-        //   80
-        // );
-        // let translation = Cartesian3.subtract(
-        //   offset,
-        //   surface,
-        //   new Cartesian3()
-        // );
-        // _baiMoTiles.modelMatrix = Matrix4.fromTranslation(translation);
+        /* 以下代码进行tile位置偏移，通过矩阵变换来达到对应的位置
+        let cartographic = Cartographic.fromCartesian(
+          _baiMoTiles.boundingSphere.center
+        );
+        let surface = Cartesian3.fromRadians(
+          cartographic.longitude,
+          cartographic.latitude,
+          cartographic.height
+        );
+        let offset = Cartesian3.fromRadians(
+          cartographic.longitude,
+          cartographic.latitude,
+          80
+        );
+        let translation = Cartesian3.subtract(
+          offset,
+          surface,
+          new Cartesian3()
+        );
+        _baiMoTiles.modelMatrix = Matrix4.fromTranslation(translation);
+
+        */
       });
     },
 
     setViewToHome() {
       this.viewer.camera.setView({
         // fromDegrees()方法，将经纬度和高程转换为世界坐标
-        destination: Cartesian3.fromDegrees(114.47932, 22.98434, 500.0),
+        destination: Cartesian3.fromDegrees(114.33092, 23.0197, 500.0),
         orientation: {
           // 指向
-          heading: 2.93,
+          heading: 0.6914850051267347,
           // 视角
-          pitch: -0.55,
+          pitch: -0.4646038131597887,
           roll: 0,
         },
       });
@@ -230,14 +214,14 @@ export default {
     flyToHome(is3D) {
       this.viewer.camera.flyTo({
         destination: new Cartesian3.fromDegrees(
-          114.30821,
-          23.02448,
+          114.33092,
+          23.0197,
           is3D ? 500.0 : 40000
         ),
         orientation: {
-          heading: 2.93,
-          pitch: -0.55,
-          roll: 0.0,
+          heading: 0.6914850051267347,
+          pitch: -0.4646038131597887,
+          roll: 0,
         },
         duration: 3,
       });
@@ -356,32 +340,8 @@ export default {
       this.viewer = null;
     },
 
-    // 初始化测试材质polygon
-    // initEntityFromMaterial() {
-    //   // lon: 114.48024
-    //   // lat: 22.97805
-    //   this.material = this.viewer.entities.add({
-    //     rectangle: {
-    //       material: videoActiveImage,
-    //       coordinates: Rectangle.fromDegrees(
-    //         114.48024,
-    //         22.97805,
-    //         114.48034,
-    //         22.97815
-    //       ),
-    //       height: 30.0,
-    //     },
-    //   });
-    // },
-
     // 初始化测试模型
     initGlb(h = 0, p = 0, r = 0, long = 114.47999, lat = 22.97798) {
-      // lon: 114.47999
-      // lat: 22.97798
-      // height: 8.090607476709359
-      // pitch: -1.0231272955944153
-      // roll: 0.002755173470617933
-      // heading: 2.5011602835281876
       const position = new Cartesian3.fromDegrees(long, lat, 0.0);
       const heading = CesiumMath.toRadians(h);
       const pitch = CesiumMath.toRadians(p);
@@ -496,7 +456,7 @@ export default {
       const luwangData = GeoJsonDataSource.load("luwang.json", {
         stroke: Color.BLUE,
         fill: Color.BLUE.withAlpha(0.1),
-        strokeWidth: 10,
+        strokeWidth: 3,
       });
       this.viewer.dataSources.add(luwangData);
       luwangData.then((dataSources) => {
@@ -566,7 +526,7 @@ export default {
           },
         }),
       });
-      getRequest("rivers.geojson").then((res) => {
+      getRequestNotInterceptors("rivers.json").then((res) => {
         console.log(res.data.features);
         res.data.features.forEach((feature) => {
           if (feature.geometry.type === "MultiPolygon") {
@@ -723,12 +683,15 @@ export default {
     },
 
     driving(start, end) {
-      getRequest("https://restapi.amap.com/v5/direction/driving", {
-        key: "74855f70a5386d3d281bae746001e4f0",
-        origin: start,
-        destination: end,
-        show_fields: "polyline",
-      }).then(({ data }) => {
+      getRequestNotInterceptors(
+        "https://restapi.amap.com/v5/direction/driving",
+        {
+          key: "74855f70a5386d3d281bae746001e4f0",
+          origin: start,
+          destination: end,
+          show_fields: "polyline",
+        }
+      ).then(({ data }) => {
         const {
           route: { paths },
         } = data;
